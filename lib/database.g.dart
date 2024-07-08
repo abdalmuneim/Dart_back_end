@@ -29,11 +29,11 @@ class $ExampleTableTable extends ExampleTable
   static const VerificationMeta _descMeta = const VerificationMeta('desc');
   @override
   late final GeneratedColumn<String> desc = GeneratedColumn<String>(
-      'desc', aliasedName, false,
+      'desc', aliasedName, true,
       additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 500),
       type: DriftSqlType.string,
-      requiredDuringInsert: true);
+      requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [id, name, desc];
   @override
@@ -58,8 +58,6 @@ class $ExampleTableTable extends ExampleTable
     if (data.containsKey('desc')) {
       context.handle(
           _descMeta, desc.isAcceptableOrUnknown(data['desc']!, _descMeta));
-    } else if (isInserting) {
-      context.missing(_descMeta);
     }
     return context;
   }
@@ -75,7 +73,7 @@ class $ExampleTableTable extends ExampleTable
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       desc: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}desc'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}desc']),
     );
   }
 
@@ -89,15 +87,16 @@ class ExampleTableData extends DataClass
     implements Insertable<ExampleTableData> {
   final int id;
   final String name;
-  final String desc;
-  const ExampleTableData(
-      {required this.id, required this.name, required this.desc});
+  final String? desc;
+  const ExampleTableData({required this.id, required this.name, this.desc});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
-    map['desc'] = Variable<String>(desc);
+    if (!nullToAbsent || desc != null) {
+      map['desc'] = Variable<String>(desc);
+    }
     return map;
   }
 
@@ -105,7 +104,7 @@ class ExampleTableData extends DataClass
     return ExampleTableCompanion(
       id: Value(id),
       name: Value(name),
-      desc: Value(desc),
+      desc: desc == null && nullToAbsent ? const Value.absent() : Value(desc),
     );
   }
 
@@ -115,7 +114,7 @@ class ExampleTableData extends DataClass
     return ExampleTableData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      desc: serializer.fromJson<String>(json['desc']),
+      desc: serializer.fromJson<String?>(json['desc']),
     );
   }
   @override
@@ -124,15 +123,18 @@ class ExampleTableData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
-      'desc': serializer.toJson<String>(desc),
+      'desc': serializer.toJson<String?>(desc),
     };
   }
 
-  ExampleTableData copyWith({int? id, String? name, String? desc}) =>
+  ExampleTableData copyWith(
+          {int? id,
+          String? name,
+          Value<String?> desc = const Value.absent()}) =>
       ExampleTableData(
         id: id ?? this.id,
         name: name ?? this.name,
-        desc: desc ?? this.desc,
+        desc: desc.present ? desc.value : this.desc,
       );
   @override
   String toString() {
@@ -158,7 +160,7 @@ class ExampleTableData extends DataClass
 class ExampleTableCompanion extends UpdateCompanion<ExampleTableData> {
   final Value<int> id;
   final Value<String> name;
-  final Value<String> desc;
+  final Value<String?> desc;
   const ExampleTableCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -167,9 +169,8 @@ class ExampleTableCompanion extends UpdateCompanion<ExampleTableData> {
   ExampleTableCompanion.insert({
     this.id = const Value.absent(),
     required String name,
-    required String desc,
-  })  : name = Value(name),
-        desc = Value(desc);
+    this.desc = const Value.absent(),
+  }) : name = Value(name);
   static Insertable<ExampleTableData> custom({
     Expression<int>? id,
     Expression<String>? name,
@@ -183,7 +184,7 @@ class ExampleTableCompanion extends UpdateCompanion<ExampleTableData> {
   }
 
   ExampleTableCompanion copyWith(
-      {Value<int>? id, Value<String>? name, Value<String>? desc}) {
+      {Value<int>? id, Value<String>? name, Value<String?>? desc}) {
     return ExampleTableCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -232,13 +233,13 @@ typedef $$ExampleTableTableInsertCompanionBuilder = ExampleTableCompanion
     Function({
   Value<int> id,
   required String name,
-  required String desc,
+  Value<String?> desc,
 });
 typedef $$ExampleTableTableUpdateCompanionBuilder = ExampleTableCompanion
     Function({
   Value<int> id,
   Value<String> name,
-  Value<String> desc,
+  Value<String?> desc,
 });
 
 class $$ExampleTableTableTableManager extends RootTableManager<
@@ -263,7 +264,7 @@ class $$ExampleTableTableTableManager extends RootTableManager<
           getUpdateCompanionBuilder: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
-            Value<String> desc = const Value.absent(),
+            Value<String?> desc = const Value.absent(),
           }) =>
               ExampleTableCompanion(
             id: id,
@@ -273,7 +274,7 @@ class $$ExampleTableTableTableManager extends RootTableManager<
           getInsertCompanionBuilder: ({
             Value<int> id = const Value.absent(),
             required String name,
-            required String desc,
+            Value<String?> desc = const Value.absent(),
           }) =>
               ExampleTableCompanion.insert(
             id: id,
