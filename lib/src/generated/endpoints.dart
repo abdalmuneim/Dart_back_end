@@ -26,8 +26,8 @@ class Endpoints extends _i1.EndpointDispatch {
       name: 'example',
       endpoint: endpoints['example']!,
       methodConnectors: {
-        'cd': _i1.MethodConnector(
-          name: 'cd',
+        'hello': _i1.MethodConnector(
+          name: 'hello',
           params: {
             'name': _i1.ParameterDescription(
               name: 'name',
