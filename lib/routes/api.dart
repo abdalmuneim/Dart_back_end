@@ -13,9 +13,10 @@ class ApiRoutes implements AppRoutes {
 
     final exampleController = ExampleController();
 
-    router.get('/example/list',
-        applyMiddlewares(['auth'], exampleController.listExamples));
-    // router.get('/example/show/<id>', applyMiddlewares(['auth'], exampleController.getExampleById));
+    router.get('/example/list', exampleController.listExamples);
+
+    // router.get('/example/list', applyMiddlewares(['auth'], exampleController.listExamples));
+    router.get('/example/show/<id>', exampleController.getExampleById);
     router.post('/example/create', exampleController.createExample);
     router.put('/example/update/<id>', exampleController.updateExample);
     router.delete('/example/delete/<id>', exampleController.deleteExample);
