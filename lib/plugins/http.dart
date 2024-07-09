@@ -61,7 +61,7 @@ Future<http.Response> put(Uri url,
     _client.put(url, headers: headers, body: body, encoding: encoding);
 
 @override
-  Future<http.Response> delete(Uri url, {Map<String, String>? headers}) =>
+Future<http.Response> delete(Uri url, {Map<String, String>? headers}) =>
     _client.delete(url, headers: headers);
 
 @override
