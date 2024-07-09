@@ -10,7 +10,7 @@ Middleware errorHandler() {
       } catch (e, stackTrace) {
         if (Env.debug) {
           final errorResponse = {
-            'message': e.toString().toString().replaceAll('\n', ' ').replaceAll('\r', ' '),
+            'message': e.toString().replaceAll('\n', ' ').replaceAll('\r', ' '),
             'stackTrace': _parseTrace(stackTrace.toString().replaceAll('\n', ' ').replaceAll('\r', ' ')),
           };
           return Response.internalServerError(

@@ -3,7 +3,7 @@ import '../models/example_model.dart';
 
 class ExampleController {
   Response getExampleById(Request request, String id) {
-    final example = Example(int.parse(id), 'Example Name');
+    final example = Example(int.parse(id), 'Example Name$id');
     return Response.ok(example.toJson());
   }
 
